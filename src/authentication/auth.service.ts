@@ -3,11 +3,19 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { users } from './constants/users';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Auth } from '../database/core/auth.entity';
 
 @Injectable()
 export class AuthService {
- createUser(createAuthDto: CreateAuthDto) {
-  const {
+  constructor(
+    @InjectRepository(Auth)
+    private userRepository: Repository<Auth>,
+  ) {}
+
+ createUser(createAuthDto: CreateAuthDto)  {
+   const {
     userid,
     username,
     useremail,
@@ -49,7 +57,7 @@ findUser(loginAuthDto: LoginAuthDto) {
     throw new HttpException({ message: 'Invalid credentials' }, 401);
   }
 
-  return user;
+  return true;
 }
 
 }
