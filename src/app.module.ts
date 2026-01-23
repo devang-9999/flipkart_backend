@@ -11,7 +11,7 @@ import { dataSourceOptions } from './config/typeorm.config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(dataSourceOptions),
+    TypeOrmModule.forRoot({...dataSourceOptions}),
     AuthModule,
     ProductsModule
   ],

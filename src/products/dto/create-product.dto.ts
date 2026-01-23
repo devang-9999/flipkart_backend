@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 /* eslint-disable prettier/prettier */
 export class CreateProductDto {
 
@@ -20,6 +20,7 @@ export class CreateProductDto {
     @IsNumber({}, { message: 'Stock must be a number' })
     stock: number;
 
-    @IsNotEmpty({ message: 'Images cannot be empty' })
+    // @IsNotEmpty({ message: 'Images cannot be empty' })
+    @IsOptional()
     images: string[];
 }

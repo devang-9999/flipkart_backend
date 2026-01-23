@@ -14,9 +14,9 @@ const rawDataSourceOptions = {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    synchronize: false,
+    synchronize: true,
     entities: [Auth,Products],
-     migrations: ["src/database/migrations/*.ts"],
+     migrations: [__dirname + "../database/migrations/*.ts"],
 };
 
 export const dataSourceOptions = rawDataSourceOptions as DataSourceOptions;
