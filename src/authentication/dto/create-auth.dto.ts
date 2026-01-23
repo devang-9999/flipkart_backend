@@ -11,7 +11,7 @@ export class CreateAuthDto {
 
   @IsString({ message: 'Password must be a string' })
   @IsNotEmpty({ message: 'Password cannot be empty' })
-  userpassword: string;
+  userPassword: string;
 
   @IsString({ message: 'username must be a string' })
   @IsNotEmpty({ message: 'username cannot be empty' })

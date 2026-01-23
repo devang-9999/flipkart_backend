@@ -2,7 +2,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
-import { users } from './constants/users';
+// import { users } from './constants/users';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Auth } from '../database/core/auth.entity';
@@ -14,50 +14,48 @@ export class AuthService {
     private userRepository: Repository<Auth>,
   ) {}
 
- createUser(createAuthDto: CreateAuthDto)  {
-   const {
-    userid,
-    username,
-    useremail,
-    userpassword,
-    role,
-  } = createAuthDto;
+  async createUser(createAuthDto: CreateAuthDto) {
+    const { userid, username, useremail, userPassword, role } = createAuthDto;
 
-  const existingEmail = users.some(u => u.useremail === useremail);
-  const existingUsername = users.some(u => u.username === username);
+    const existingUser = await this.userRepository.findOne({
+      where: [{ useremail }, { username }],
+    });
 
-  if (existingEmail) {
-    throw new HttpException({ message: 'Email already in use' }, 400);
+    if (existingUser) {
+      throw new HttpException(
+        { message: 'User already exists' },
+        400,
+      );
+    }
+
+    const newUser = this.userRepository.create({
+      userid: userid ?? undefined,
+      username,
+      useremail,
+      userPassword,
+      role: role ?? 'User',
+    });
+
+    return this.userRepository.save(newUser);
   }
 
-  if (existingUsername) {
-    throw new HttpException({ message: 'Username already in use' }, 400);
+  async findUser(loginAuthDto: LoginAuthDto) {
+    const { email, password } = loginAuthDto;
+
+    const user = await this.userRepository.findOne({
+      where: {
+        useremail: email,
+        userPassword: password,
+      },
+    });
+
+    if (!user) {
+      throw new HttpException(
+        { message: 'Invalid credentials' },
+        401,
+      );
+    }
+
+    return true;
   }
-
-  const newUser = {
-    userid: userid ?? Date.now(),
-    username,
-    useremail,
-    userpassword,
-    role: role ?? 'User',
-  };
-
-  users.push(newUser);
-  return newUser;
-}
-
-findUser(loginAuthDto: LoginAuthDto) {
-  const { email, password } = loginAuthDto;
-
-  const user = users.find(
-    u => u.useremail === email && u.userpassword === password,
-  );
-
-  if (!user) {
-    throw new HttpException({ message: 'Invalid credentials' }, 401);
-  }
-
-  return true;
-}
-
 }

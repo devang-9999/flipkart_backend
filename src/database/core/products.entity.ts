@@ -1,29 +1,28 @@
 /* eslint-disable prettier/prettier */
 import { Entity, PrimaryGeneratedColumn, Column,  } from "typeorm";
-
 @Entity()
 export class Products {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column()
-    name: string;
+  @Column()
+  name: string;
 
-    @Column()
-    description: string;
+  @Column()
+  description: string;
 
-    @Column()
-    price: string;
+  @Column('decimal')
+  price: number;
 
-    @Column()
-    category: string;
+  @Column()
+  category: string;
 
-    @Column()
-    brand: string;
+  @Column()
+  brand: string;
 
-    @Column()
-    stock: string;
+  @Column()
+  stock: number;
 
-    @Column()
-    images: string;
+  @Column('json')
+  images: string[];
 }
