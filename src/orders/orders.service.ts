@@ -1,0 +1,88 @@
+/* eslint-disable prettier/prettier */
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { Orders } from 'src/database/core/order.entity';
+import { Cart } from 'src/database/core/cart.entity';
+import { PaymentStatus, DeliveryStatus } from './enums/order-status.enum';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+
+@Injectable()
+export class OrdersService {
+  constructor(
+    @InjectRepository(Cart)
+    private readonly cartRepo: Repository<Cart>,
+
+    @InjectRepository(Orders)
+    private readonly ordersRepo: Repository<Orders>,
+  ) {}
+
+ async placeOrder(userId: number, dto: CreateOrderDto) {
+  const cart = await this.cartRepo.findOne({
+    where: { user: { userid: userId } },
+    relations: ['items', 'items.product', 'user'],
+  });
+
+  if (!cart || cart.items.length === 0) {
+    throw new BadRequestException('Cart is empty');
+  }
+
+  const orderItems = cart.items.map(item => ({
+    product: item.product,
+    quantity: item.quantity,
+    price: item.product.price,
+  }));
+
+  const order = this.ordersRepo.create({
+    user: cart.user,
+    items: orderItems,
+    address: dto.address,
+    phoneNumber: dto.phoneNumber,
+    paymentStatus: PaymentStatus.AWAITING,
+    deliveryStatus: DeliveryStatus.TO_BE_SHIPPED,
+  });
+
+  await this.cartRepo.remove(cart); 
+  return this.ordersRepo.save(order);
+}
+
+
+
+  async getOrdersByUser(userId: number) {
+    return this.ordersRepo.find({
+      where: { user: { userid: userId } },
+      relations: ['items', 'items.product'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+
+  async updateOrderStatus(
+  orderId: number,
+  dto: UpdateOrderStatusDto,
+) {
+  const order = await this.ordersRepo.findOne({
+    where: { id: orderId },
+  });
+
+  if (!order) {
+    throw new NotFoundException('Order not found');
+  }
+
+  if (dto.paymentStatus) {
+    order.paymentStatus = dto.paymentStatus;
+  }
+
+  if (dto.deliveryStatus) {
+    order.deliveryStatus = dto.deliveryStatus;
+  }
+
+  return this.ordersRepo.save(order);
+}
+
+}

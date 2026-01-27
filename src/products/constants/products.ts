@@ -31,6 +31,4 @@ export const products =[
     stock: 75,
     images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYkNfJXqGRMePB9nR7GLLPoyBL6C-49T8B2w&s', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYkNfJXqGRMePB9nR7GLLPoyBL6C-49T8B2w&s'],
   }
-
-
 ]

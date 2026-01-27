@@ -1,5 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Entity, PrimaryGeneratedColumn, Column,  } from "typeorm";
+import { OneToMany } from 'typeorm';
+import { Orders } from './order.entity';
 
 @Entity()
 export class Auth {
@@ -17,4 +19,7 @@ export class Auth {
 
     @Column()
     role: string;
+
+    @OneToMany(() => Orders, (order) => order.user)
+    orders: Orders[];
 }

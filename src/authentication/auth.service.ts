@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
 import { HttpException, Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { LoginAuthDto } from './dto/login-auth.dto';
-// import { users } from './constants/users';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { CreateAuthDto } from './dto/create-auth.dto';
+import { LoginAuthDto } from './dto/login-auth.dto';
 import { Auth } from '../database/core/auth.entity';
 
 @Injectable()
@@ -12,6 +12,8 @@ export class AuthService {
   constructor(
     @InjectRepository(Auth)
     private userRepository: Repository<Auth>,
+
+    private jwtService: JwtService,
   ) {}
 
   async createUser(createAuthDto: CreateAuthDto) {
@@ -22,10 +24,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new HttpException(
-        { message: 'User already exists' },
-        400,
-      );
+      throw new HttpException({ message: 'User already exists' }, 400);
     }
 
     const newUser = this.userRepository.create({
@@ -39,7 +38,8 @@ export class AuthService {
     return this.userRepository.save(newUser);
   }
 
-  async findUser(loginAuthDto: LoginAuthDto) {
+
+  async login(loginAuthDto: LoginAuthDto) {
     const { email, password } = loginAuthDto;
 
     const user = await this.userRepository.findOne({
@@ -50,12 +50,17 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new HttpException(
-        { message: 'Invalid credentials' },
-        401,
-      );
+      throw new HttpException({ message: 'Invalid credentials' }, 401);
     }
 
-    return true;
+    const payload = {
+      userid: user.userid,
+      useremail: user.useremail,
+      role: user.role,
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 }

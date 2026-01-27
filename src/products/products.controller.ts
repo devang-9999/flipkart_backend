@@ -18,10 +18,52 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
+  @Get('searchInput')
+   searchProducts(
+    @Query('searchTerm') searchTerm: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 14,
+  ) {
 
-  @Get('search')
-  findByCategory(@Query('category') category: string) {
-    return this.productsService.findByCategory(category);
+     const cleanedSearchTerm = searchTerm?.trim();
+
+  if (!cleanedSearchTerm) {
+    return {
+      data: [],
+      page: Number(page),
+      limit: Number(limit),
+      total: 0,
+    };
+  }
+    return this.productsService.searchProducts(
+      cleanedSearchTerm,
+      Number(page),
+      Number(limit),
+    );
+  }
+
+    @Get('by-category')
+  async findByCategory(
+    @Query('category') category: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ) {
+    const normalizedCategory = category?.trim().toUpperCase();
+
+    if (!normalizedCategory) {
+      return {
+        data: [],
+        page: Number(page),
+        limit: Number(limit),
+        total: 0,
+      };
+    }
+
+    return this.productsService.findByCategory(
+      normalizedCategory,
+      Number(page),
+      Number(limit),
+    );
   }
 
   @Get(':id')
