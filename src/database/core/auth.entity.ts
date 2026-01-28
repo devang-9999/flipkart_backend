@@ -1,25 +1,32 @@
 /* eslint-disable prettier/prettier */
-import { Entity, PrimaryGeneratedColumn, Column,  } from "typeorm";
-import { OneToMany } from 'typeorm';
-import { Orders } from './order.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { Orders } from "./order.entity";
+import { Products } from "./products.entity";
 
 @Entity()
 export class Auth {
-    @PrimaryGeneratedColumn()
-    userid: number;
+  @PrimaryGeneratedColumn()
+  userid: number;
 
-    @Column()
-    username: string;
+  @Column()
+  username: string;
 
-    @Column()
-    useremail: string;
+  @Column({ unique: true })
+  useremail: string;
 
-    @Column()
-    userPassword: string;
+  @Column()
+  userPassword: string;
 
-    @Column()
-    role: string;
+  @Column()
+  role: string;
 
-    @OneToMany(() => Orders, (order) => order.user)
-    orders: Orders[];
+  @Column({ default: false })
+isBlocked: boolean;
+
+
+  @OneToMany(() => Orders, (order) => order.user)
+  orders: Orders[];
+
+  @OneToMany(() => Products, (product) => product.seller)
+  products: Products[];
 }

@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -14,10 +14,27 @@ export class ProductsService {
     private productRepository: Repository<Products>,
   ) { }
 
-  async create(createProductDto: CreateProductDto) {
-    const product = this.productRepository.create(createProductDto);
-    return this.productRepository.save(product);
+  // async create(createProductDto: CreateProductDto) {
+  //   const product = this.productRepository.create(createProductDto);
+  //   return this.productRepository.save(product);
+  // }
+async createProductBySeller(
+  sellerId: number,
+  role: string,
+  dto: CreateProductDto,
+) {
+  if (role.toUpperCase() !== 'SELLER')
+ {
+    throw new BadRequestException('Only sellers can create products')
   }
+
+  const product = this.productRepository.create({
+    ...dto,
+    seller: { userid: sellerId }, 
+  });
+
+  return this.productRepository.save(product);
+}
 
   async findAll(page = 1, limit = 14) {
     const skip = (page - 1) * limit;
@@ -35,6 +52,45 @@ export class ProductsService {
       total,
     };
   }
+
+  async getProductsBySeller(sellerId: number, role: string) {
+  if (role !== 'SELLER') {
+    throw new BadRequestException('Only sellers can view this');
+  }
+
+  return this.productRepository.find({
+    where: { seller: { userid: sellerId } },
+    order: { id: 'DESC' },
+  });
+}
+
+async updateProductBySeller(
+  productId: number,
+  sellerId: number,
+  role: string,
+  dto: UpdateProductDto,
+) {
+  if (role !== 'SELLER') {
+    throw new BadRequestException('Only sellers can update products');
+  }
+
+  const product = await this.productRepository.findOne({
+    where: { id: productId },
+    relations: ['seller'],
+  });
+
+  if (!product) {
+    throw new NotFoundException('Product not found');
+  }
+
+  if (product.seller.userid !== sellerId) {
+    throw new BadRequestException('You can update only your own products');
+  }
+
+  Object.assign(product, dto);
+  return this.productRepository.save(product);
+}
+
 
   async searchProducts(
     searchTerm: string,

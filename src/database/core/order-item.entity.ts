@@ -19,6 +19,9 @@ export class OrderItem {
   @Column()
   quantity: number;
 
-  @Column('decimal')
-  price: number; 
+@Column({
+  type: 'decimal',
+  default: 0,
+})
+price: number;
 }

@@ -1,17 +1,64 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Body, Patch, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, ParseIntPipe, Query, UseGuards, Req } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { AuthGuard } from '@nestjs/passport';
+interface RequestWithUser extends Request {
+  user: {
+    id: number;
+    email: string;
+    role: string;
+  };
+}
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto);
-  }
+  // @Post()
+  // create(@Body() createProductDto: CreateProductDto) {
+  //   return this.productsService.create(createProductDto);
+  // }
+
+@Post()
+@UseGuards(AuthGuard('jwt'))
+createProductBySeller(
+  @Req() req: RequestWithUser,
+  @Body() createProductDto: CreateProductDto,
+) {
+  return this.productsService.createProductBySeller(
+    req.user.id,
+    req.user.role,
+    createProductDto,
+  );
+}
+
+@Get('my-products')
+@UseGuards(AuthGuard('jwt'))
+getMyProducts(@Req() req: RequestWithUser) {
+  return this.productsService.getProductsBySeller(
+    req.user.id,
+    req.user.role,
+  );
+}
+
+@Patch(':id')
+@UseGuards(AuthGuard('jwt'))
+updateProductBySeller(
+  @Param('id', ParseIntPipe) id: number,
+  @Req() req: RequestWithUser,
+  @Body() updateProductDto: UpdateProductDto,
+) {
+  return this.productsService.updateProductBySeller(
+    id,
+    req.user.id,
+    req.user.role,
+    updateProductDto,
+  );
+}
+
+
 
   @Get()
   findAll() {

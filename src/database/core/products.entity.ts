@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { Entity, PrimaryGeneratedColumn, Column,  } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn,  } from "typeorm";
+import { Auth } from "./auth.entity";
 @Entity()
 export class Products {
   @PrimaryGeneratedColumn()
@@ -8,21 +9,25 @@ export class Products {
   @Column()
   name: string;
 
-  @Column()
-  description: string;
-
-  @Column('decimal')
-  price: number;
+@Column({
+  type: 'decimal',
+  default: 0,
+})
+price: number;
 
   @Column()
   category: string;
 
   @Column()
-  brand: string;
-
-  @Column()
   stock: number;
 
-  @Column('json')
-  images: string[];
+@Column('text', {
+  array: true,
+  default: () => 'ARRAY[]::text[]',
+})
+images: string[];
+
+  @ManyToOne(() => Auth, (user) => user.products, { eager: false })
+  @JoinColumn({ name: 'sellerUserId' }) 
+  seller: Auth;
 }

@@ -27,7 +27,7 @@ interface RequestWithUser extends Request {
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  // 🧾 Place Order
+
   @Post()
   placeOrder(
     @Req() req: RequestWithUser,
@@ -36,13 +36,13 @@ export class OrdersController {
     return this.ordersService.placeOrder(req.user.userid, dto);
   }
 
-  // 👀 My Orders
+
   @Get('my-orders')
   getMyOrders(@Req() req: RequestWithUser) {
     return this.ordersService.getOrdersByUser(req.user.userid);
   }
 
-  // 👨‍💼 Admin: Update Order Status
+ 
   @Patch(':id/status')
   updateStatus(
     @Param('id') id: number,

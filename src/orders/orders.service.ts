@@ -24,7 +24,7 @@ export class OrdersService {
 
  async placeOrder(userId: number, dto: CreateOrderDto) {
   const cart = await this.cartRepo.findOne({
-    where: { user: { userid: userId } },
+    where: { user: { userid: userId } }, 
     relations: ['items', 'items.product', 'user'],
   });
 
@@ -46,12 +46,11 @@ export class OrdersService {
     paymentStatus: PaymentStatus.AWAITING,
     deliveryStatus: DeliveryStatus.TO_BE_SHIPPED,
   });
+  cart.items = [];
+  await this.cartRepo.save(cart);
 
-  await this.cartRepo.remove(cart); 
   return this.ordersRepo.save(order);
 }
-
-
 
   async getOrdersByUser(userId: number) {
     return this.ordersRepo.find({
